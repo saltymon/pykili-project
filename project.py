@@ -87,7 +87,7 @@ def award(parameters):
         for row in reader:
             prm_name = row['parameter']
             for genre in genres:
-                if float(row[genre + '_down']) <= parameters[prm_name] <= float(row[genre + '_up']):
+                if float(row[genre + '_down']) <= parameters[prm_name] <= float(row[genre + '_up']) and row[genre + '_award'] != '0':
                     points[genre] += int(row[genre + '_award'])
                     # print(prm_name, parameters[prm_name], genre, row[genre + '_award'])
     for key, value in points.items():
