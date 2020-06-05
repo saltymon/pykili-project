@@ -9,6 +9,7 @@ def reader(filename):
         filename = input('Такого файла нет, попробуйте ещё раз: ')
     with open(filename, encoding='utf-8') as f:
         text = f.read()
+    text = ''.join([line for line in text.split('\n') if line.strip() != ''])
     return text
 
 
@@ -18,7 +19,7 @@ def pos_analyze(text):
     pos_list = []
     mystemmed = m.analyze(text)
     for record in mystemmed:
-        if a in record:
+        if a in record and record[a]:
             gr = record[a][0]['gr']
             pos = re.split(',|=', gr)[0]
             pos_list.append(pos)
@@ -81,7 +82,7 @@ def award(parameters):
             for genre in genres:
                 if float(row[genre + '_down']) <= parameters[prm_name] <= float(row[genre + '_up']) and row[genre + '_award'] != '0':
                     points[genre] += int(row[genre + '_award'])
-                    # print(prm_name, parameters[prm_name], genre, row[genre + '_award'])
+                    print(prm_name, parameters[prm_name], genre, row[genre + '_award'])
     for key, value in points.items():
         if value <= 2:
             points[key] = 0
