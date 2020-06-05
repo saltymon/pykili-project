@@ -1,5 +1,6 @@
-import pymorphy2, nltk, os.path, string, csv
+import nltk, os.path, string, csv, re
 from rusenttokenize import ru_sent_tokenize
+from pymystem3 import Mystem
 nltk.download('punkt')
 
 
@@ -11,66 +12,57 @@ def reader(filename):
     return text
 
 
-def tokenize(sentences):
-    tokens = []
-    for sentence in sentences:
-        tokens.extend(nltk.word_tokenize(sentence))
-    return tokens
-
-
-def pos_analyze(tokens):
-    morph = pymorphy2.MorphAnalyzer()
+def pos_analyze(text):
+    m = Mystem()
+    a = 'analysis'
     pos_list = []
-    for token in tokens:
-        p = morph.parse(token)[0]
-        pos_list.append(p.tag.POS)
+    mystemmed = m.analyze(text)
+    for record in mystemmed:
+        if a in record:
+            gr = record[a][0]['gr']
+            pos = re.split(',|=', gr)[0]
+            pos_list.append(pos)
     return pos_list
 
 
 def count(pos_list, parameters):
-    VERB_NOUN = 0
-    VERB_ADVB = 0
-    GRND_NOUN = 0
-    GRND_ADVB = 0
-    NOUN_NOUN = 0
-    ADJF_NOUN = 0
+    V_S = 0
+    V_ADV = 0
+    S_S = 0
+    A_S = 0
     for i, pos in enumerate(pos_list):
-        if pos == 'VERB' or pos == 'INFN' or pos == 'GRND':
-            parameters['VERB'] += 1
-        elif pos == 'NOUN':
-            parameters['NOUN'] += 1
-        elif pos == 'ADJF':
-            parameters['ADJF'] += 1
-        elif pos == 'NPRO':
-            parameters['NPRO'] += 1
-        elif pos == 'PRCL':
-            parameters['PRCL'] += 1
+        if pos == 'V':
+            parameters['V'] += 1
+        elif pos == 'S':
+            parameters['S'] += 1
+        elif pos == 'A':
+            parameters['A'] += 1
+        elif pos == 'SPRO':
+            parameters['SPRO'] += 1
+        elif pos == 'PART':
+            parameters['PART'] += 1
         if i < len(pos_list) - 1:
             near_pos = pos_list[i + 1]
-            if (pos == 'VERB' and near_pos == 'NOUN') or (pos == 'NOUN' and near_pos == 'VERB'):
-                VERB_NOUN += 1
-            elif (pos == 'VERB' and near_pos == 'ADVB') or (pos == 'ADVB' and near_pos == 'VERB'):
-                VERB_ADVB += 1
-            elif (pos == 'GRND' and near_pos == 'NOUN') or (pos == 'NOUN' and near_pos == 'GRND'):
-                GRND_NOUN += 1
-            elif (pos == 'GRND' and near_pos == 'ADVB') or (pos == 'ADVB' and near_pos == 'GRND'):
-                GRND_ADVB += 1
-            elif pos == 'NOUN' and near_pos == 'NOUN':
-                NOUN_NOUN += 1
-            elif pos == 'ADJF' and near_pos == 'NOUN':
-                ADJF_NOUN += 1
+            if (pos == 'V' and near_pos == 'S') or (pos == 'S' and near_pos == 'V'):
+                V_S += 1
+            elif (pos == 'V' and near_pos == 'ADV') or (pos == 'ADV' and near_pos == 'V'):
+                V_ADV += 1
+            elif pos == 'S' and near_pos == 'S':
+                S_S += 1
+            elif pos == 'A' and near_pos == 'S':
+                A_S += 1
     for key in parameters:
         if key != 'DYN' and key != 'SENTLEN':
             parameters[key] = parameters[key] / len(pos_list)
-    parameters['DYN'] = (VERB_NOUN + VERB_ADVB + GRND_NOUN + GRND_ADVB)/(NOUN_NOUN + ADJF_NOUN)
+    parameters['DYN'] = (V_S + V_ADV)/(S_S + A_S)
 
 
 def sent_count(sentences, parameters):
-    tokens = 0
+    words = 0
     for sentence in sentences:
         sentence = sentence.translate(str.maketrans('', '', string.punctuation))
-        tokens += len(nltk.word_tokenize(sentence))
-    parameters['SENTLEN'] = tokens / len(sentences)
+        words += len(nltk.word_tokenize(sentence))
+    parameters['SENTLEN'] = words / len(sentences)
 
 
 def award(parameters):
@@ -100,14 +92,13 @@ def main():
     filename = input('Введите название файла с текстом: ')
     text = reader(filename)
     sentences = ru_sent_tokenize(text)
-    tokens = tokenize(sentences)
-    pos_list = pos_analyze(tokens)
+    pos_list = pos_analyze(text)
     parameters = {
-        'VERB' : 0.0,
-        'NOUN' : 0.0,
-        'ADJF' : 0.0,
-        'NPRO' : 0.0,
-        'PRCL' : 0.0,
+        'V' : 0.0,
+        'S' : 0.0,
+        'A' : 0.0,
+        'SPRO' : 0.0,
+        'PART' : 0.0,
         'DYN' : 0.0,
         'SENTLEN' : 0.0
     }
