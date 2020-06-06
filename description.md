@@ -9,6 +9,8 @@
 - Используются модули nltk, os, string, csv, re, rusenttokenize, pymystem3;
 - Используются параметры и их значения для каждого стиля из [Дубовик 2017] (https://openbooks.itmo.ru/ru/file/6502/6502.pdf);
 - https://github.com/saltymon/pykili-project/blob/master/main.zip — всё, что нужно для работы.
+- https://github.com/saltymon/pykili-project/blob/master/DEMO%20texts.zip — тексты для демонстрации работы.
+- 85 строка — режим отладки: можно посмотреть, какие оценки получил текст и за что.
 
 ## Критерий завершенного проекта
 
