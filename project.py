@@ -90,7 +90,7 @@ def award(parameters):
 
 
 def main():
-    filename = input('Введите название файла с текстом: ')
+    filename = input('Введите название файла с текстом в кодировке utf-8: ')
     text = reader(filename)
     sentences = ru_sent_tokenize(text)
     pos_list = pos_analyze(text)
